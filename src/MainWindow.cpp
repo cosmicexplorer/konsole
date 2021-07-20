@@ -277,6 +277,10 @@ void MainWindow::activeViewChanged(SessionController *controller)
 
     // Update window icon to newly activated session's icon
     updateWindowIcon();
+
+    for (IKonsolePlugin *plugin : _plugins) {
+        plugin->activeViewChanged(controller, this);
+    }
 }
 
 void MainWindow::activeViewTitleChanged(ViewProperties *properties)
@@ -497,9 +501,7 @@ void MainWindow::newTab()
 
 void MainWindow::addPlugin(IKonsolePlugin *plugin)
 {
-    _plugins.append(plugin);
-    connect(_viewManager, &Konsole::ViewManager::activeViewChanged, plugin,
-        &IKonsolePlugin::activeViewChanged);
+    _plugins.insert(plugin);
 }
 
 void MainWindow::cloneTab()
