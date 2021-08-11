@@ -41,6 +41,7 @@ ProfileManager::ProfileManager()
 {
     //load fallback profile
     initFallbackProfile();
+    _defaultProfile = _fallbackProfile;
 
     // lookup the default profile specified in <App>rc
     // for stand-alone Konsole, appConfig is just konsolerc
@@ -57,18 +58,7 @@ ProfileManager::ProfileManager()
         defaultProfileFileName = group.readEntry("DefaultProfile", "");
     }
 
-    _defaultProfile = _fallbackProfile;
-    if (!defaultProfileFileName.isEmpty()) {
-        // load the default profile
-        const QString path = QStandardPaths::locate(QStandardPaths::GenericDataLocation, QStringLiteral("konsole/") + defaultProfileFileName);
-
-        if (!path.isEmpty()) {
-            Profile::Ptr profile = loadProfile(path);
-            if (profile) {
-                _defaultProfile = profile;
-            }
-        }
-    }
+    loadAllProfiles(defaultProfileFileName);
 
     Q_ASSERT(_profiles.count() > 0);
     Q_ASSERT(_defaultProfile);
@@ -199,18 +189,15 @@ QStringList ProfileManager::availableProfileNames() const
     return names;
 }
 
-void ProfileManager::loadAllProfiles()
+void ProfileManager::loadAllProfiles(const QString &defaultProfileFileName)
 {
-    if (_loadedAllProfiles) {
-        return;
-    }
-
-    const QStringList& paths = availableProfilePaths();
+    const QStringList &paths = availableProfilePaths();
     for (const QString &path : paths) {
-        loadProfile(path);
+        Profile::Ptr profile = loadProfile(path);
+        if (profile && !defaultProfileFileName.isEmpty() && path.endsWith(defaultProfileFileName)) {
+            _defaultProfile = profile;
+        }
     }
-
-    _loadedAllProfiles = true;
 }
 
 void ProfileManager::sortProfiles(QList<Profile::Ptr>& list)
@@ -243,8 +230,6 @@ void ProfileManager::saveSettings()
 
 QList<Profile::Ptr> ProfileManager::allProfiles()
 {
-    loadAllProfiles();
-
     auto loadedProfiles = _profiles.values();
     sortProfiles(loadedProfiles);
 
@@ -358,7 +343,7 @@ void ProfileManager::changeProfile(Profile::Ptr profile,
         // dialog
         if (!origPath.isEmpty() && profile->path() != origPath) {
             // this is needed to include the old profile too
-            _loadedAllProfiles = false;
+            loadAllProfiles();
             const QList<Profile::Ptr> availableProfiles = ProfileManager::instance()->allProfiles();
             for (const Profile::Ptr &oldProfile : availableProfiles) {
                 if (oldProfile->path() == origPath) {
