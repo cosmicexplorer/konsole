@@ -38,11 +38,6 @@ static bool stringLessThan(const QString& p1, const QString& p2)
 }
 
 ProfileManager::ProfileManager()
-    : _profiles(QSet<Profile::Ptr>())
-    , _defaultProfile(nullptr)
-    , _fallbackProfile(nullptr)
-    , _loadedAllProfiles(false)
-    , _shortcuts(QMap<QKeySequence, ShortcutData>())
 {
     //load fallback profile
     initFallbackProfile();
