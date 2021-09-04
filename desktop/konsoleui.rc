@@ -54,10 +54,4 @@
         <Menu name="help"><text>Help</text>
         </Menu>
     </MenuBar>
-    <ToolBar name="mainToolBar">
-        <text>Main Toolbar</text>
-        <index>0</index>
-        <Action name="new-tab"/>
-        <Action name="split-view"/>
-    </ToolBar>
 </gui>
